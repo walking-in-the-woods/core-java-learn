@@ -1,5 +1,7 @@
 package AdventureGame;
 
+// https://docs.oracle.com/javase/tutorial/essential/concurrency/imstrat.html
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,16 +10,22 @@ public class Location {
     private final String description;
     private final Map<String, Integer> exits;
 
-    public Location(int locationID, String description) {
+    public Location(int locationID, String description, Map<String, Integer> exits) {
         this.locationID = locationID;
         this.description = description;
-        this.exits = new HashMap<String, Integer>();
+        if(exits != null) {
+            this.exits = new HashMap<String, Integer>(exits);
+        } else {
+            this.exits = new HashMap<String, Integer>();
+        }
         this.exits.put("Q", 0);
     }
 
-    public void addExit(String direction, int location) {
-        exits.put(direction, location);
-    }
+//    public void addExit(String direction, int location) {
+//        exits.put(direction, location);
+//    }
+
+
 
     public int getLocationID() {
         return locationID;
