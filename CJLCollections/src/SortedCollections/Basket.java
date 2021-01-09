@@ -26,6 +26,26 @@ public class Basket {
         return Collections.unmodifiableMap(list);
     }
 
+    public int removeFromBasket(StockItem item, int quantity) {
+        if((item != null) && (quantity > 0)) {
+            // Check if we already have the item in the basket
+            int inBasket = list.getOrDefault(item, 0);
+            int newQuantity = inBasket - quantity;
+            if (newQuantity > 0) {
+                list.put(item, newQuantity);
+                return quantity;
+            } else if (newQuantity == 0) {
+                list.remove(item);
+                return quantity;
+            }
+        }
+        return 0;
+    }
+
+    public void clearBasket() {
+        this.list.clear();
+    }
+
     @Override
     public String toString() {
         String s = "\nShopping basket " + name + " contains " + list.size() + ((list.size() == 1) ? " item" : " items") + "\n";
