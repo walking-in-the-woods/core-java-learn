@@ -1,4 +1,6 @@
+resourses
 target
 out
 .idea/
 *.iml
+*.jar
