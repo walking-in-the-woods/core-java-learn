@@ -49,6 +49,15 @@ public class Locations implements Map<Integer, Location> {
         }
     }
 
+    /*
+    * 1. This first four bytes will contain the number of locations (bytes 0-3)
+    * 2. The next four bytes will contain the start offset of the locations section (bytes 4-7)
+    * 3. The next section of the file will contain the index (the index is 1692 bytes long).
+    *    It will start at byte 8 and ends at byte 1699.
+    * 4. The final section of the file will contain the location records (the data).
+    *    It will start at byte 1700
+    */
+
     static {
 
         try (ObjectInputStream locFile = new ObjectInputStream(new BufferedInputStream(

@@ -1,0 +1,47 @@
+package AdventureGame;
+
+// https://docs.oracle.com/javase/tutorial/essential/concurrency/imstrat.html
+
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class Location implements Serializable {
+    private final int locationID;
+    private final String description;
+    private final Map<String, Integer> exits;
+    private long serialVersionUID = 1L;
+
+    /*
+    int and String are primitive types, but Map<> is an object, so it should be serialized.
+    In our case it will be, because LinkedHashMap implements the Serializable interface.
+    When we write a Location object, the entire contents of the exits field will also be serialized.
+     */
+
+    public Location(int locationID, String description, Map<String, Integer> exits) {
+        this.locationID = locationID;
+        this.description = description;
+        if(exits != null) {
+            this.exits = new LinkedHashMap<String, Integer>(exits);
+        } else {
+            this.exits = new LinkedHashMap<String, Integer>();
+        }
+        this.exits.put("Q", 0);
+    }
+
+    public int getLocationID() {
+        return locationID;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Map<String, Integer> getExits() {
+        return new LinkedHashMap<String, Integer>(exits);
+    }
+
+    protected void addExit(String direction, int location) {
+        exits.put(direction, location);
+    }
+}

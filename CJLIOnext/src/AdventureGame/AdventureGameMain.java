@@ -41,6 +41,7 @@ Firstly, we're gonna get the index record for the location, and secondly, we're 
 and read the location data.
  */
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -49,7 +50,7 @@ public class AdventureGameMain {
 
     private static Locations locations = new Locations();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
         Map<String, String> vocabulary = new HashMap<String, String>();
@@ -59,16 +60,15 @@ public class AdventureGameMain {
         vocabulary.put("WEST", "W");
         vocabulary.put("EAST", "E");
 
-        //int loc = 1;
-        int loc = 64;
+        Location currentLocation = locations.getLocation(1);
         while(true) {
-            System.out.println(locations.get(loc).getDescription());
+            System.out.println(currentLocation.getDescription());
 
-            if(loc == 0) {
+            if(currentLocation.getLocationID() == 0) {
                 break;
             }
 
-            Map<String, Integer> exits = locations.get(loc).getExits();
+            Map<String, Integer> exits = currentLocation.getExits();
             System.out.print("Available exits are: ");
             for(String exit: exits.keySet()) {
                 System.out.print(exit + ", ");
@@ -87,10 +87,12 @@ public class AdventureGameMain {
             }
 
             if(exits.containsKey(direction)) {
-                loc = exits.get(direction);
+                currentLocation = locations.getLocation(currentLocation.getExits().get(direction));
             } else {
                 System.out.println("You cannot go in that direction");
             }
         }
+
+        locations.close();
     }
 }
