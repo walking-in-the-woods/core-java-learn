@@ -55,32 +55,39 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 
 public class PathsMain {
     public static void main(String[] args) {
         try {
 
-            Path fileToDelete = FileSystems.getDefault().getPath(
-                    "CJLNIO/Examples", "Dir1",  "file1copy.txt");
-            Files.deleteIfExists(fileToDelete);
+//            Path fileToCreate = FileSystems.getDefault().getPath("CJLNIO/Examples", "file2.txt");
+//            Files.createFile(fileToCreate);
 
-//            Path fileToMove = FileSystems.getDefault().getPath("CJLNIO/Examples", "file1.txt");
-//            Path destination = FileSystems.getDefault().getPath("CJLNIO/Examples", "file2.txt");
-//            Files.move(fileToMove, destination); // rename the file
+//            Path dirToCreate = FileSystems.getDefault().getPath(
+//                    "CJLNIO/Examples", "Dir2/Dir3/Dir4/Dir5/Dir6");
+//            Path dirToCreate = FileSystems.getDefault().getPath(
+//                    "CJLNIO/Examples/Dir2/Dir3/Dir4/Dir5/Dir6/Dir7");
+//            Files.createDirectories(dirToCreate);
 
-//            Path fileToMove = FileSystems.getDefault().getPath(
-//                    "CJLNIO/Examples", "file1copy.txt");
-//            Path destination = FileSystems.getDefault().getPath(
-//                    "CJLNIO/Examples", "Dir1", "file1copy.txt");
-//            Files.move(fileToMove, destination);
+            Path filePath = FileSystems.getDefault().getPath("CJLNIO/Examples", "Dir1/file1.txt");
+            Long size = Files.size(filePath);
+            System.out.println("Size = " + size);
+            System.out.println("Last modified = " + Files.getLastModifiedTime(filePath));
 
-//            Path sourceFile = FileSystems.getDefault().getPath("CJLNIO/Examples", "file1.txt");
-//            Path copyFile = FileSystems.getDefault().getPath("CJLNIO/Examples", "file1copy.txt");
-//            Files.copy(sourceFile, copyFile, StandardCopyOption.REPLACE_EXISTING);
-//
-//            sourceFile = FileSystems.getDefault().getPath("CJLNIO/Examples", "Dir1");
-//            copyFile = FileSystems.getDefault().getPath("CJLNIO/Examples", "Dir4");
-//            Files.copy(sourceFile, copyFile, StandardCopyOption.REPLACE_EXISTING);
+            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+            System.out.println("Size = " + attrs.size());
+            System.out.println("Last modified = " + attrs.lastModifiedTime());
+            System.out.println("Created = " + attrs.creationTime());
+            System.out.println("Is directory = " + attrs.isDirectory());
+            System.out.println("Is regular file = " + attrs.isRegularFile());
+
+//            Path dirToCreate = FileSystems.getDefault().getPath("CJLNIO/Examples", "Dir4");
+//            Files.createDirectory(dirToCreate);
+
+//            Path fileToDelete = FileSystems.getDefault().getPath(
+//                    "CJLNIO/Examples", "Dir1",  "file1copy.txt");
+//            Files.deleteIfExists(fileToDelete);
 
         } catch (IOException e) {
             System.out.println(e.getMessage());;
