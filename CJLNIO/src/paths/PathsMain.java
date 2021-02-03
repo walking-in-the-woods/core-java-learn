@@ -51,6 +51,31 @@ java.io.File class has some problems:
 6. Since the File class doesn't understand symbolic links, walking a directory tree is problematic.
 */
 
+/*
+    || - logical pipe character
+    | - pipe character (bitwise-onclusive or)
+    used to chain exceptions together
+*/
+
+/*
+What if we want to retrieve specific files in a directory (.pdf for example)? The newDirectoryStream method accepts
+a filter as a second parameter, and only paths that match the filter will actually be included in the
+DirectoryStream. Now, the second filtering parameter is referred to as a "glob". Now, what a glob is a pattern
+that's similar to a regular expression, but the syntax is more geared towards the types of things we'd wanna do
+when working with paths.
+
+Examples:
+
+    The * character matches any string (which can contain any number of characters).
+    *.dat will match any path with the .dat extension.
+    *.{dat,txt} will match any path that has the extension .dat or .txt
+    ? matches exactly one character. For example, the glob ??? would match any path that contains exactly three
+      characters.
+    myfile* matches any paths that begin with myfile.
+    b?*.txt matches any paths that are at least two characters long and begin with the character b
+      (the ? forces a second character, and the * matches 0 or more characters).
+*/
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -59,83 +84,23 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class PathsMain {
     public static void main(String[] args) {
-        try {
 
-//            Path fileToCreate = FileSystems.getDefault().getPath("CJLNIO/Examples", "file2.txt");
-//            Files.createFile(fileToCreate);
+//        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+//            public boolean accept(Path path) throws IOException {
+//                return Files.isRegularFile(path);
+//            }
+//        };
 
-//            Path dirToCreate = FileSystems.getDefault().getPath(
-//                    "CJLNIO/Examples", "Dir2/Dir3/Dir4/Dir5/Dir6");
-//            Path dirToCreate = FileSystems.getDefault().getPath(
-//                    "CJLNIO/Examples/Dir2/Dir3/Dir4/Dir5/Dir6/Dir7");
-//            Files.createDirectories(dirToCreate);
+        DirectoryStream.Filter<Path> filter = p -> Files.isRegularFile(p);
 
-            Path filePath = FileSystems.getDefault().getPath("CJLNIO/Examples", "Dir1/file1.txt");
-            Long size = Files.size(filePath);
-            System.out.println("Size = " + size);
-            System.out.println("Last modified = " + Files.getLastModifiedTime(filePath));
-
-            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-            System.out.println("Size = " + attrs.size());
-            System.out.println("Last modified = " + attrs.lastModifiedTime());
-            System.out.println("Created = " + attrs.creationTime());
-            System.out.println("Is directory = " + attrs.isDirectory());
-            System.out.println("Is regular file = " + attrs.isRegularFile());
-
-//            Path dirToCreate = FileSystems.getDefault().getPath("CJLNIO/Examples", "Dir4");
-//            Files.createDirectory(dirToCreate);
-
-//            Path fileToDelete = FileSystems.getDefault().getPath(
-//                    "CJLNIO/Examples", "Dir1",  "file1copy.txt");
-//            Files.deleteIfExists(fileToDelete);
-
-        } catch (IOException e) {
-            System.out.println(e.getMessage());;
+        Path directory = FileSystems.getDefault().getPath("CJLNIO/FileTree/Dir2");
+        //try (DirectoryStream<Path> contents = Files.newDirectoryStream(directory, "*.dat")) {
+        try (DirectoryStream<Path> contents = Files.newDirectoryStream(directory, filter)) {
+            for (Path file : contents) {
+                System.out.println(file.getFileName());
+            }
+        } catch (IOException | DirectoryIteratorException e) {
+            System.out.println(e.getMessage());
         }
     }
-//        Path path = FileSystems.getDefault().getPath("WorkingDirectoryFile.txt");
-//        printFile(path);
-//
-////        Path filePath = FileSystems.getDefault().getPath("CJLNIO/files", "SubdirectoryFile.txt");
-//        Path filePath = Paths.get(".","CJLNIO/files", "SubdirectoryFile.txt");
-//        printFile(filePath);
-//
-////        filePath = Paths.get("D:\\code\\java\\JavaTimBuchalka\\OutThere.txt");
-//        filePath = Paths.get("D:\\", "code\\java\\JavaTimBuchalka\\", "OutThere.txt");
-//        printFile(filePath);
-//
-//        filePath = Paths.get(".");
-//        System.out.println(filePath.toAbsolutePath());
-//
-//        // D:\Examples\.\subfolder\..\directory
-//        // D:\Examples\directory           // .. means the parent directory (move up th the previous node)
-//
-//        Path path2 = FileSystems.getDefault().getPath(
-//                ".", "CJLNIO/files", "..", "files", "SubdirectoryFile.txt");
-//        System.out.println(path2.normalize().toAbsolutePath());
-//        printFile(path2.normalize());
-//
-//        Path path3 = FileSystems.getDefault().getPath("thisfiledoesnotexist.txt");
-//        System.out.println(path3.toAbsolutePath());
-//
-//        Path path4 = Paths.get("D:\\", "abcdf", "whatever.txt");
-//        System.out.println(path4.toAbsolutePath());
-//
-//        filePath = FileSystems.getDefault().getPath("CJLNIO/files");
-//        System.out.println("Exists = " + Files.exists(filePath));
-//
-//        System.out.println("Exists = " + Files.exists(path4));
-//    }
-//
-//    private static void printFile(Path path) {
-//        try (BufferedReader fileReader = Files.newBufferedReader(path)) {
-//            String line;
-//            while((line = fileReader.readLine()) != null) {
-//                System.out.println(line);
-//            }
-//        } catch (IOException e) {
-//            System.out.println(e.getMessage());
-//            e.printStackTrace();
-//        }
-//    }
 }
