@@ -76,6 +76,42 @@ Examples:
       (the ? forces a second character, and the * matches 0 or more characters).
 */
 
+/*
+Using the methods in FileVisitor, we can run code at each stage of the traversal process.
+Here are the methods we'll have to implement:
+
+    * preVisitDirectory() - this method accepts a reference to the directory, and the BasicFileAttributes
+                            instance for the directory. It's called before entries in the directory are visited.
+
+    * postVisitDirectory() - this method accepts a reference to the directory and an exception object (when necessary).
+                            It's called after entries in the directory, and all its descendants, have been visited.
+                            The exception parameter will be set when an exception happens during the traversal of the
+                            entries and descendants.
+
+                            There's a way to skip files as we're traversing, so not every file has to have been
+                            visited for this method to be called. Every file has to be visited or explicitly skipped.
+                            Of course, if an exception is thrown and not handled, the traversal will prematurely end
+                            and postVisitDirectory() will be called.
+
+    * visitFile() -         this method accepts a reference to the file and a BasicFileAttributes instance.
+                            This is where we run the code that will operate on the file. It's only called for files.
+
+    * visitFileFailed() -   this method is called when a file can't be accessed. The exception that's thrown
+                            is passed to the method. We can then decide what to do with it (throw it, print it,
+                            or anything else that makes sense for the application and operation being performed).
+                            Can be called for files and directories.
+*/
+
+/*
+If we wanted to copy a file tree, then we'd want to handle the directory BEFORE we handle those entries
+because the copy of the directory will have to exist before we can copy entries into it. So, in that scenario,
+we would actually handle the directory using the preVisitDirectory() method.
+
+On the other hand, if we wanted to traverse a file tree to delete it, then we'd actually want to handle
+the directory in the postVisitDirectory() method because we have to delete all the entries in the directory
+and all its descendants BEFORE we can delete the directory.
+*/
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -125,6 +161,15 @@ public class PathsMain {
         Iterable<Path> rootPaths = FileSystems.getDefault().getRootDirectories();
         for(Path path : rootPaths) {
             System.out.println("Root path: " + path);
+        }
+
+        System.out.println("--- Walking File Tree for Dir2 ---");
+        Path dir2Path = FileSystems.getDefault().getPath("CJLNIO" + File.separator + "FileTree" +
+                File.separator + "Dir2");
+        try {
+            Files.walkFileTree(dir2Path, new PrintNames());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
 }
