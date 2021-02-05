@@ -67,9 +67,7 @@ public class ConcurrencyMain {
         Thread anotherThread = new AnotherThread();
         anotherThread.setName("== Another Thread ==");
         anotherThread.start();
-//        anotherThread.run(); // we'll get "Hello from main"
 
-        // New thread in an anonymous class
         new Thread() {
             public void run() {
                 System.out.println(ThreadColor.ANSI_GREEN + "Hello from the anonymous class thread");
@@ -81,11 +79,19 @@ public class ConcurrencyMain {
             @Override
             public void run() {
                 System.out.println(ThreadColor.ANSI_RED + "Hello from the anonymous class's implementation of run()");
+                try {
+                    anotherThread.join(); // anotherThread.join(2000);
+                    System.out.println(ThreadColor.ANSI_RED +
+                            "AnotherThread terminated, or timed out, so I'm running again");
+                } catch (InterruptedException e) {
+                    System.out.println(ThreadColor.ANSI_RED + "I couldn't wait after all. I was interrupted");
+                }
             }
         });
-        myRunnableThread.start();
-        System.out.println(ThreadColor.ANSI_PURPLE + "Hello again from the main thread.");
 
-//        anotherThread.start(); // throws an exception because the calling thread has already started
+        myRunnableThread.start();
+//        anotherThread.interrupt(); // to call an InterruptedException
+
+        System.out.println(ThreadColor.ANSI_PURPLE + "Hello again from the main thread.");
     }
 }
