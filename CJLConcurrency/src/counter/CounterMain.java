@@ -94,6 +94,67 @@ are only reading the shared resource, problem will only arise when at least one 
 the resource.
 */
 
+/*
+Fortunately, Java provides us with the way to control when a thread can change a value in the heap. The process of
+controlling when threads execute code and therefore when they can access the heap is called "Synchronization".
+So we can synchronize methods and statements. When a method is synchronized only one thread can execute that a time.
+
+If we use "public synchronized void doCountdown() { ... }" or "synchronized (this) {for ...}" {then we get:
+
+    Thread 1: i = 10
+    Thread 1: i = 9
+    Thread 1: i = 8
+    Thread 1: i = 7
+    Thread 1: i = 6
+    Thread 1: i = 5
+    Thread 1: i = 4
+    Thread 1: i = 3
+    Thread 1: i = 2
+    Thread 1: i = 1
+    Thread 2: i = 10
+    Thread 2: i = 9
+    Thread 2: i = 8
+    Thread 2: i = 7
+    Thread 2: i = 6
+    Thread 2: i = 5
+    Thread 2: i = 4
+    Thread 2: i = 3
+    Thread 2: i = 2
+    Thread 2: i = 1
+
+Unfortunately, we can't synchronize constructors. And it wouldn't really make sense we could do that. Only one thread
+can construct an instance and until the constructor has finished executing the instance won't be available for
+other threads to use anyway. But what we can do is synchronized any other method, so that's one way to prevent
+a race condition. The second way we can prevent a race condition is to synchronize a block of statements rather than
+an entire method. So every Java object has what's called "Intrinsic Lock" and will also see this reference to
+as a monitor. So we can synchronize a block of statements that work with an object by forcing threads to acquire
+the objects lock before they execute the statement block. Only one thread can hold the lock at a time, so the other
+threads that want the lock will be suspended until the running thread releases it. Then one and only one of the
+waiting threads can get the lock and continue executing.
+
+Primitive types don't have intrinsic lock.
+*/
+
+/*
+We can also synchronize static methods an use static objects. And when we do that, the lock that used is owned by
+the class object associated with the objects class. Synchronization is reentrant, what means if a thread acquires
+an objects lock and within the synchronized code it calls a method that's using the same object to synchronize
+some code, the thread can keep executing because it already has the object lock. In other words, the thread can
+acquire a lock it already owns. Now, if this wasn't the case, synchronization would be a lot trickier.
+The "Critical Section" term just refers to the code that's referencing a shared resource like a variable.
+Only one thread at a time should be able to execute a critical section. When a class or a method is "Thread-Safe"
+that means that the developer has synchronized all the critical sections within the code so that we, as a
+developer don't have to worry about the thread interference. So if we're using a method or class this isn't
+thread safe, then the developer hasn't added any synchronization and now we are responsible for that.
+
+None of the UI components are thread safe in JavaFX. So rather than forcing every developer to properly synchronize
+any code that modifies the UI, the JavaFX developers instead force all such code to run on the JavaFX runtime thread.
+Since the only one thread, the JavaFX runtime thread, can modify UI components, there won't be any thread interference.
+
+When we're synchronizing code, we should synchronize only the code that must be synchronized. So, in our example
+only the for loop has to be synchronized.
+*/
+
 public class CounterMain {
     public static void main(String[] args) {
         Countdown countdown = new Countdown();
@@ -110,7 +171,7 @@ public class CounterMain {
 
 class Countdown {
 
-    //private int i;
+    private int i;
 
     public void doCountdown() {
         String color;
@@ -126,8 +187,10 @@ class Countdown {
                 color = ThreadColor.ANSI_GREEN;
         }
 
-        for(int i=10; i > 0; i--) {
-            System.out.println(color + Thread.currentThread().getName() + ": i = " + i);
+        synchronized (this) {
+            for (i = 10; i > 0; i--) {
+                System.out.println(color + Thread.currentThread().getName() + ": i = " + i);
+            }
         }
     }
 }
