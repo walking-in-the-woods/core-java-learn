@@ -24,9 +24,20 @@ So instead of using synchronization, we can prevent thread interference using cl
 java.util.ConcurrentLocks.Lock interface
 */
 
+/*
+ReentrantLock
+
+If a thread is already holding a reentrant lock when it reaches the code that requires the same lock, it can continue
+executing. It doesn't have to obtain the lock again. Not all implementations of the lock interface are re-entrant.
+
+Re-entrant lock object can keep track of how many times they locked. It a thread gets the same lock twice it has ot
+release it twice before another thread can get the lock.
+*/
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static produserConsumer.ProducerConsumerMain.EOF;
 
@@ -35,9 +46,11 @@ public class ProducerConsumerMain {
 
     public static void main(String[] args) {
         List<String> buffer = new ArrayList<String>();
-        MyProducer producer = new MyProducer(buffer, ThreadColor.ANSI_YELLOW);
-        MyConsumer consumer1 = new MyConsumer(buffer, ThreadColor.ANSI_PURPLE);
-        MyConsumer consumer2 = new MyConsumer(buffer, ThreadColor.ANSI_CYAN);
+        ReentrantLock bufferLock = new ReentrantLock();
+
+        MyProducer producer = new MyProducer(buffer, ThreadColor.ANSI_YELLOW, bufferLock);
+        MyConsumer consumer1 = new MyConsumer(buffer, ThreadColor.ANSI_PURPLE, bufferLock);
+        MyConsumer consumer2 = new MyConsumer(buffer, ThreadColor.ANSI_CYAN, bufferLock);
 
         new Thread(producer).start();
         new Thread(consumer1).start();
@@ -48,10 +61,12 @@ public class ProducerConsumerMain {
 class MyProducer implements Runnable {
     private List<String> buffer;
     private String color;
+    private ReentrantLock bufferLock;
 
-    public MyProducer(List<String> buffer, String color) {
+    public MyProducer(List<String> buffer, String color, ReentrantLock bufferLock) {
         this.buffer = buffer;
         this.color = color;
+        this.bufferLock = bufferLock;
     }
 
     public void run() {
@@ -61,9 +76,9 @@ class MyProducer implements Runnable {
         for(String num : nums) {
             try {
                 System.out.println(color + "Adding..." + num);
-                synchronized (buffer) {
-                    buffer.add(num);
-                }
+                bufferLock.lock();
+                buffer.add(num);
+                bufferLock.unlock();
 
                 Thread.sleep(random.nextInt(1000));
             } catch (InterruptedException e) {
@@ -72,9 +87,9 @@ class MyProducer implements Runnable {
         }
 
         System.out.println(color + "Adding EOF and exiting...");
-        synchronized (buffer) {
-            buffer.add("EOF");
-        }
+        bufferLock.lock();
+        buffer.add("EOF");
+        bufferLock.unlock();
     }
 }
 
@@ -93,25 +108,29 @@ without removing that particular entry.
 class MyConsumer implements Runnable {
     private List<String> buffer;
     private String color;
+    private ReentrantLock bufferLock;
 
-    public MyConsumer(List<String> buffer, String color) {
+    public MyConsumer(List<String> buffer, String color, ReentrantLock bufferLock) {
         this.buffer = buffer;
         this.color = color;
+        this.bufferLock = bufferLock;
     }
 
     public void run() {
         while (true) {
-            synchronized (buffer) {
-                if (buffer.isEmpty()) {
-                    continue;
-                }
-                if (buffer.get(0).equals(EOF)) {
-                    System.out.println(color + "Exiting");
-                    break;
-                } else {
-                    System.out.println(color + "Removed" + buffer.remove(0));
-                }
+            bufferLock.lock();
+            if (buffer.isEmpty()) {
+                bufferLock.unlock();
+                continue;
             }
+            if (buffer.get(0).equals(EOF)) {
+                System.out.println(color + "Exiting");
+                bufferLock.unlock();
+                break;
+            } else {
+                System.out.println(color + "Removed" + buffer.remove(0));
+            }
+            bufferLock.unlock();
         }
     }
 }
