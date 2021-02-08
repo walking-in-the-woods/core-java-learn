@@ -63,7 +63,11 @@ When we want to recieve a value back from a thread that we are executing in the 
 method. The submit() method accepts a callable object which is very similar to a runnable object except that it can
 return a value. The value can be returned as an object of type "future". So  just to be clear, the call to the
 future.get() method blocks until the result is available. So, when we calling it from the main thread, application
-will be frozen until the results available.
+will be frozen until the results available. So, we wouldn't use this method in a UI application, and in fact, we
+wouldn't use the services in the java.util.concurrent package in a UI application. When working with JavaFX,
+we instead use the classes in the javafx.concurrent package to run on background threads and to process the results.
+The classes in the JavaFX package leverage the classes in java.util.concurrent package in a way that makes sense
+for UI applications.
 */
 
 import java.util.ArrayList;
@@ -81,7 +85,7 @@ public class ProducerConsumerMain {
         List<String> buffer = new ArrayList<String>();
         ReentrantLock bufferLock = new ReentrantLock();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
 
         MyProducer producer = new MyProducer(buffer, ThreadColor.ANSI_YELLOW, bufferLock);
         MyConsumer consumer1 = new MyConsumer(buffer, ThreadColor.ANSI_PURPLE, bufferLock);
@@ -108,10 +112,6 @@ public class ProducerConsumerMain {
         }
 
         executorService.shutdown();
-
-//        new Thread(producer).start();
-//        new Thread(consumer1).start();
-//        new Thread(consumer2).start();
     }
 }
 
