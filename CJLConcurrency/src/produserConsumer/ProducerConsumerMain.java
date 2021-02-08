@@ -34,9 +34,42 @@ Re-entrant lock object can keep track of how many times they locked. It a thread
 release it twice before another thread can get the lock.
 */
 
+/*
+The "Thread Poll" is a managed set of threads. It reduces the overhead of thread creation, especially in applications
+that use a large number of threads. A thread poll may also limit the number of threads that are active running
+a blocked at any one particular time. When using a certain types of thread polls, an application can't run wild
+and create an expensive number of threads. In Java we use thread polls through the executive service implementations.
+Now, if we want to, we can actually implement our own thread poll by creating a class that implements one of the thread
+poll interfaces, and by doing so we can configure how the underlying thread poll ultimately is managed.
+But it's recommended that we use the implementations provided by the JVM in most situations.
+Now, since thread polls can limit the number of active threads, it's possible that when we asked the service to run
+a task, it won't be able to run it straight away. For example, if the maximum number of threads has been set to 20,
+they may already be 20 active threads when we submitted a task. In that case the task will have to wait on the
+services queue until one of the active threads actually terminates. The executive service interface extends
+the executor interface which is only got one method execute().
+ */
+
+/*
+Now, as with the lock interface, sub interfaces and implementations of executor offer more functionality than
+the base interface. We have to use factory methods in the executors class to create the instances that implement
+executor service. We can create several different types of executor services based on the type of thread pool
+we want to service to use. A fixed thread poll means that there's any really ever going to be a specific number
+of threads available to process tasks at any one time. If all the threads are busy and more tasks as a better execution,
+those tasks will just have to wait in a queue. so let's
+ */
+
+/*
+When we want to recieve a value back from a thread that we are executing in the background, we can use the submit()
+method. The submit() method accepts a callable object which is very similar to a runnable object except that it can
+return a value. The value can be returned as an object of type "future". So  just to be clear, the call to the
+future.get() method blocks until the result is available. So, when we calling it from the main thread, application
+will be frozen until the results available.
+*/
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static produserConsumer.ProducerConsumerMain.EOF;
@@ -48,13 +81,37 @@ public class ProducerConsumerMain {
         List<String> buffer = new ArrayList<String>();
         ReentrantLock bufferLock = new ReentrantLock();
 
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+
         MyProducer producer = new MyProducer(buffer, ThreadColor.ANSI_YELLOW, bufferLock);
         MyConsumer consumer1 = new MyConsumer(buffer, ThreadColor.ANSI_PURPLE, bufferLock);
         MyConsumer consumer2 = new MyConsumer(buffer, ThreadColor.ANSI_CYAN, bufferLock);
 
-        new Thread(producer).start();
-        new Thread(consumer1).start();
-        new Thread(consumer2).start();
+        executorService.execute(producer);
+        executorService.execute(consumer1);
+        executorService.execute(consumer2);
+
+        Future<String> future = executorService.submit(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                System.out.println(ThreadColor.ANSI_WHITE + "I'm being printed for the Callable class");
+                return "This is the callable result";
+            }
+        });
+
+        try {
+            System.out.println(future.get());
+        } catch (ExecutionException e) {
+            System.out.println("Something went wrong");
+        } catch (InterruptedException e) {
+            System.out.println("Thread running the task was interrupted");
+        }
+
+        executorService.shutdown();
+
+//        new Thread(producer).start();
+//        new Thread(consumer1).start();
+//        new Thread(consumer2).start();
     }
 }
 
