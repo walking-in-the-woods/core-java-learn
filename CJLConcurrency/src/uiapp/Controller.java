@@ -12,10 +12,13 @@ Whatever the value property changes, the items property will update accordingly.
 update the list view by calling platform.runLater.
 */
 
+/*
+And one last note here. If we want to pass parameters to the task that the service runs, we have to expose those
+parameters as properties of the service sub class.
+*/
+
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -34,29 +37,11 @@ public class Controller {
 
     public void initialize() {
         service = new EmployeeService();
-
         progressBar.progressProperty().bind(service.progressProperty());
         progressLabel.textProperty().bind(service.messageProperty());
         listView.itemsProperty().bind(service.valueProperty());
-
-        service.setOnRunning(new EventHandler<WorkerStateEvent>() {
-            @Override
-            public void handle(WorkerStateEvent event) {
-                progressBar.setVisible(true);
-                progressLabel.setVisible(true);
-            }
-        });
-
-        service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-            @Override
-            public void handle(WorkerStateEvent event) {
-                progressBar.setVisible(false);
-                progressLabel.setVisible(false);
-            }
-        });
-
-        progressBar.setVisible(false);
-        progressLabel.setVisible(false);
+        progressBar.visibleProperty().bind(service.runningProperty());
+        progressLabel.visibleProperty().bind(service.runningProperty());
     }
 
     @FXML
