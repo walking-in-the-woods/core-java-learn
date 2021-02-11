@@ -15,7 +15,7 @@ public class TaskExample extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("uiapp.fxml"));
         primaryStage.setTitle("Task Example");
-        primaryStage.setScene(new Scene(root, 300, 500));
+        primaryStage.setScene(new Scene(root, 300, 550));
         primaryStage.show();
     }
 }
