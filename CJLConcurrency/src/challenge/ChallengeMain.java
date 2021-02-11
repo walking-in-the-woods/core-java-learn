@@ -7,6 +7,7 @@ public class ChallengeMain {
         Thread trTread1 = new Thread(new Runnable() {
             @Override
             public void run() {
+                account.printAccountNumber();
                 account.deposit(300.00);
                 account.withdraw(50.00);
             }
@@ -15,6 +16,7 @@ public class ChallengeMain {
         Thread trTread2 = new Thread(new Runnable() {
             @Override
             public void run() {
+                account.printAccountNumber();
                 account.deposit(203.75);
                 account.withdraw(100.00);
             }
