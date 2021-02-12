@@ -44,11 +44,22 @@ New code:
     }
 */
 
+/*
+    Interface       Functional          Number of       Returns a value      Can be
+                    Method              Arguments                            chained
+
+    Consumer        accept()            1 or 2 (Bi)     No                   Yes
+    Supplier        get()               0               Yes                  No
+    Predicate       test()              1 or 2 (Bi)     Yes - boolean        Yes
+    Function        apply()             1 or 2 (Bi)     Yes                  Yes
+    UnaryOperator   depends on type     1               Yes - same as type   Yes
+                                                        as argument
+*/
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 
 public class FuncMain {
     public static void main(String[] args) {
@@ -88,6 +99,31 @@ public class FuncMain {
                 System.out.println(getAName(getLastName, employee));
             }
         }
+
+        Function<Employee, String> upperCase = employee -> employee.getName().toUpperCase();
+        Function<String, String> firstName = name -> name.substring(0, name.indexOf(' '));
+        Function chainedFunction = upperCase.andThen(firstName);
+        System.out.println(chainedFunction.apply(employees.get(0)));
+
+        /* We can't chain a BiFunction. When we chain functions, result of one function becomes the argument
+           for the next function. But a BiFunction has two arguments, so it can't be the second or subsequent
+           function in the chain. However, if the BiFunction was the first step, then we could do it using
+           BiFunctions and then method. For the same reason that BiFunction has to be the first function in the cain,
+           The BiFunction interface doesn't have a compose method.
+         */
+        BiFunction <String, Employee, String> concatAge = (String name, Employee employee) -> {
+            return name.concat(" " + employee.getAge());
+        };
+
+        String upperName = upperCase.apply(employees.get(0));
+        System.out.println(concatAge.apply(upperName, employees.get(0)));
+
+        IntUnaryOperator intBy5 = i -> i + 5;
+        System.out.println(intBy5.applyAsInt(10));
+
+        Consumer<String> c1 = s -> s.toUpperCase();
+        Consumer<String> c2 = s -> System.out.println(s);
+        c1.andThen(c2).accept("Hello World!");
     }
 
     private static String getAName(Function<Employee, String> getName, Employee employee) {
