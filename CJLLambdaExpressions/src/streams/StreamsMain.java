@@ -80,9 +80,43 @@ is added to the resulting stream and passed to the next step in the chain. That'
 a lower-cased "g", and the stream case prints an upper-cased "G".
 */
 
+/*
+Using the .collect() method is that we have a list that we can continue to work with if we want to.
+Now, there are two versions of the collect() method:
+
+    1. One accepts a collector which is an interface to the java.util.stream package. Now underneath the covers,
+       this version of the method maps the collector to the arguments
+    2. required by the second version of the method which accepts or expects rather three arguments:
+            -   supplier
+            -   consumer accumulator
+            -   consumer combiner
+
+So, these arguments that must be specific about how we want the items to be added to the result of collect() method.
+Fir example, let's say we wanted to end up with an ArrayList rather than a List. We can use the more specific
+collect() version of the method to actually do this.
+*/
+
+/*
+    Best Practices
+
+    1.  Specified the types of parameters vs. letting the compiler infer them
+    2.  Used a return statement with curly braces for one-statement lambda expression vs.
+        not using return because it's implied (and hence not requiring curly braces)
+    3.  Used lambda expressions that contain one statement vs. Lambda expressions that have more than one statement
+    4.  Using parenthesis when a lambda expression only has one argument vs.
+        not using parenthesis. since they're optional when there's only one argument
+
+If we look at the four variations, the two alternatives offer the choice between verbosity vs. conciseness, which
+in turn, often comes down to the choice between readability and conciseness. Not all the time. Short lambda expressions
+are usually readable no matter how concise they are. But when striving for conciseness, we can sometimes write
+lambda expressions that are difficult to decipher because we've left out too much information.
+*/
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class StreamsMain {
@@ -126,5 +160,74 @@ public class StreamsMain {
                 .distinct()
                 .peek(System.out::println)
                 .count());
+
+        Employee john = new Employee("John Doe", 30);
+        Employee jane = new Employee("Jane Deer", 25);
+        Employee jack = new Employee("Jack Hill", 40);
+        Employee snow = new Employee("Snow White", 22);
+
+        Department hr = new Department("Human Resources");
+        hr.addEmployee(jane);
+        hr.addEmployee(jack);
+        hr.addEmployee(snow);
+
+        Department accounting = new Department("Accounting");
+        accounting.addEmployee(john);
+
+        List<Department> departments = new ArrayList<>();
+        departments.add(hr);
+        departments.add(accounting);
+
+        //the flatMap() method is called so because it's often used to flatten nested list
+        departments.stream()
+                .flatMap(department -> department.getEmployees().stream())
+                .forEach(System.out::println);
+
+        // another one important method is collect(), using this method we're getting a result we can use further
+        System.out.println("-----------------------------");
+        List<String> sortedGNumbers = someBingoNumbers
+                .stream()
+                .map(String::toUpperCase)
+                .filter(s -> s.startsWith("G"))
+                .sorted()
+                .collect(Collectors.toList());
+
+        for(String s : sortedGNumbers) {
+            System.out.println(s);
+        }
+
+        // using a specific version of the collect() method
+        // ArrayList::new - a supplier, it creates objects
+        // ArrayList::add - an accumulator, it adds the items to the newly created ArrayList
+        // ArrayList::addAll - a combiner, it merges the lists
+        System.out.println("-----------------------------");
+        List<String> sortedGNumbers2 = someBingoNumbers
+                .stream()
+                .map(String::toUpperCase)
+                .filter(s -> s.startsWith("G"))
+                .sorted()
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+
+        for(String s : sortedGNumbers2) {
+            System.out.println(s);
+        }
+
+        // this groups employees by age
+        Map<Integer, List<Employee>> groupedByAge = departments.stream()
+                .flatMap(department -> department.getEmployees().stream())
+                .collect(Collectors.groupingBy(employee -> employee.getAge()));
+
+        // this returns the youngest employee in the list
+        departments.stream()
+                .flatMap(department -> department.getEmployees().stream())
+                .reduce((e1, e2) -> e1.getAge() < e2.getAge() ? e1 : e2)
+                .ifPresent(System.out::println);
+
+        Stream.of("ABC", "AC", "BAA", "CCCC", "XY", "ST")
+                .filter(s -> {
+                    System.out.println(s);
+                    return s.length() == 3;
+                })
+                .count(); // a terminal operation
     }
 }
