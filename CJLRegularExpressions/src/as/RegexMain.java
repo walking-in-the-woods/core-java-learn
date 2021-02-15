@@ -41,7 +41,7 @@ IntellyJ IDEA hint: press Alt + Enter on a regex and choose Check RegExp to test
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class IntroductionMain {
+public class RegexMain {
     public static void main(String[] args) {
         String string = "I am a string. Yes, I am.";
         System.out.println(string);
